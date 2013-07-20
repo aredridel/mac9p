@@ -173,6 +173,8 @@ struct mount_9p {
 	lck_mtx_t *nodelck;
 };
 
+#define __private_extern__ __attribute__((visibility("hidden"))) extern
+
 /* auth.c */
 __private_extern__ int authp9any_9p(mount_9p*, fid_9p, struct sockaddr*, char*, char*);
 
@@ -209,6 +211,8 @@ __private_extern__ void	nlock_9p(node_9p*, lcktype_9p);
 __private_extern__ void nunlock_9p(node_9p*);
 
 __private_extern__ lck_grp_t *lck_grp_9p;
+
+#undef __private_extern__
 
 #define MTO9P(m)		((mount_9p*)vfs_fsprivate(m))
 #define NTO9P(vp)		((node_9p*)vnode_fsnode(vp))
