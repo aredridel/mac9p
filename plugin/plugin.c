@@ -334,13 +334,6 @@ DoMount9P(const char *host, int32_t port, const char *path, const char *mntopts,
 			snprintf(portString, sizeof(portString), "port=%d", port);
 						
 			/* finally */
-			execle(cmd, cmd,
-				   "-t", VFS9PNAME,
-				   "-o", (mntflags&MNT_AUTOMOUNTED)? "automounted": "noautomounted",
-				   "-o", (mntflags&MNT_DONTBROWSE)? "nobrowse": "browse",
-				   "-o", (mntflags&MNT_RDONLY)? "rdonly": "nordonly",
-				   "-o", portString,
-				   mntopts, host, path, NULL, env);
 			DEBUG("execl %s -t %s -o %s -o %s -o %s -o %s %s %s %s", cmd,
 				  VFS9PNAME,
 				  (mntflags&MNT_AUTOMOUNTED)? "automounted": "noautomounted",
@@ -348,6 +341,13 @@ DoMount9P(const char *host, int32_t port, const char *path, const char *mntopts,
 				  (mntflags&MNT_RDONLY)? "rdonly": "nordonly",
 				  portString,
 				  mntopts, host, path);
+			execle(cmd, cmd,
+				   "-t", VFS9PNAME,
+				   "-o", (mntflags&MNT_AUTOMOUNTED)? "automounted": "noautomounted",
+				   "-o", (mntflags&MNT_DONTBROWSE)? "nobrowse": "browse",
+				   "-o", (mntflags&MNT_RDONLY)? "rdonly": "nordonly",
+				   "-o", portString,
+				   mntopts, host, path, NULL, env);
 			_exit(ECHILD);
 	}
 	
