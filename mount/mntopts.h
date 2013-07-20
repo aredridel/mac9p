@@ -1,28 +1,28 @@
-/*	$NetBSD: mntopts.h,v 1.14 2011/06/17 14:23:50 manu Exp $	*/
 /*
- *
  * Copyright (c) 1999 Apple Computer, Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
  * 
- * "Portions Copyright (c) 1999 Apple Computer, Inc.  All Rights
- * Reserved.  This file contains Original Code and/or Modifications of
- * Original Code as defined in and that are subject to the Apple Public
- * Source License Version 1.0 (the 'License').  You may not use this file
- * except in compliance with the License.  Please obtain a copy of the
- * License at http://www.apple.com/publicsource and read it before using
- * this file.
+ * This file contains Original Code and/or Modifications of Original Code
+ * as defined in and that are subject to the Apple Public Source License
+ * Version 2.0 (the 'License'). You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at
+ * http://www.opensource.apple.com/apsl/ and read it before using this
+ * file.
  * 
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
  * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE OR NON-INFRINGEMENT.  Please see the
- * License for the specific language governing rights and limitations
- * under the License."
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
+ * Please see the License for the specific language governing rights and
+ * limitations under the License.
  * 
  * @APPLE_LICENSE_HEADER_END@
  */
+
+/*	$NetBSD: mntopts.h,v 1.7 2006/02/12 01:32:06 chs Exp $	*/
+
 /*-
  * Copyright (c) 1994
  *      The Regents of the University of California.  All rights reserved.
@@ -56,10 +56,14 @@
 #ifndef _MNTOPTS_H_
 #define _MNTOPTS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct mntopt {
 	const char *m_option;	/* option name */
 	int m_inverse;		/* if a negative option, eg "dev" */
-	u_int64_t m_flag;	/* bit to set, eg. MNT_RDONLY */
+	int m_flag;		/* bit to set, eg. MNT_RDONLY */
 	int m_altloc;		/* 1 => set bit in altflags */
 };
 
@@ -75,15 +79,18 @@ struct mntopt {
 #define MOPT_GROUPQUOTA		{ "groupquota",	0, 0, 0 }
 #define MOPT_BROWSE		{ "browse",	1, MNT_DONTBROWSE, 0 }
 #define MOPT_AUTOMOUNTED	{ "automounted",0, MNT_AUTOMOUNTED, 0 }
-#define MOPT_DEFWRITE   	{ "defwrite", 	0, MNT_DEFWRITE, 0}
-#define MOPT_NOATIME		{ "atime",	1, MNT_NOATIME, 0 }
-#define MOPT_IGNORE_OWNERSHIP	{ "owners", 	1, MNT_IGNORE_OWNERSHIP, 0}
+#define MOPT_DEFWRITE		{ "defwrite",	0, MNT_DEFWRITE, 0}
+#define	MOPT_NOATIME		{ "atime",	1, MNT_NOATIME, 0}
+#define MOPT_IGNORE_OWNERSHIP	{ "owners",	1, MNT_IGNORE_OWNERSHIP, 0}
 /* alias the deprecated name for compatibility */
-#define MOPT_PERMISSIONS	{ "perm", 	1, MNT_IGNORE_OWNERSHIP, 0}
+#define MOPT_PERMISSIONS	{ "perm",	1, MNT_IGNORE_OWNERSHIP, 0}
+#define	MOPT_QUARANTINE		{ "quarantine",	0, MNT_QUARANTINE, 0}
+#define MOPT_CPROTECT		{ "protect",	0, MNT_CPROTECT, 0 }
 
 /* Control flags. */
 #define MOPT_FORCE		{ "force",	0, MNT_FORCE, 0 }
 #define MOPT_UPDATE		{ "update",	0, MNT_UPDATE, 0 }
+#define MOPT_RELOAD		{ "reload",	0, MNT_RELOAD, 0 }
 
 /* Support for old-style "ro", "rw" flags. */
 #define MOPT_RO			{ "ro",		0, MNT_RDONLY, 0 }
@@ -107,12 +114,15 @@ struct mntopt {
 	MOPT_NOSUID,							\
 	MOPT_RDONLY,							\
 	MOPT_UNION,							\
-	MOPT_BROWSE,							\
-	MOPT_AUTOMOUNTED,						\
-	MOPT_DEFWRITE,							\
-	MOPT_NOATIME
+        MOPT_BROWSE,							\
+        MOPT_AUTOMOUNTED,						\
+        MOPT_DEFWRITE,							\
+	MOPT_NOATIME,							\
+	MOPT_PERMISSIONS,						\
+	MOPT_IGNORE_OWNERSHIP,						\
+	MOPT_QUARANTINE,							\
+	MOPT_CPROTECT
 
-__BEGIN_DECLS
 typedef struct mntoptparse *mntoptparse_t;
 mntoptparse_t getmntopts(const char *, const struct mntopt *, int *, int *);
 const char *getmntoptstr(mntoptparse_t, const char *);
@@ -120,6 +130,9 @@ long getmntoptnum(mntoptparse_t, const char *);
 void freemntopts(mntoptparse_t);
 
 extern int getmnt_silent;
-__END_DECLS
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MNTOPTS_H_ */

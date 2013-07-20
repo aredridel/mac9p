@@ -5,8 +5,9 @@ OFILES=\
 	crypt.o\
 
 HFILES=\
-	../kext/plan9.h\
-	../kext/9p.h\
+	mntopts.h \
+	../kext/plan9.h \
+	../kext/9p.h \
 
 all: $(TARG)
 

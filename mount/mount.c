@@ -35,7 +35,6 @@ enum {
 
 struct mntopt mopts[] = {
 	MOPT_STDOPTS,
-//	MOPT_FORCE,
 
 	{ "uname",		0,	ALTF_UNAME,		1 },
 	{ "aname",		0,	ALTF_ANAME,		1 },
