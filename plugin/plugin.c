@@ -124,7 +124,7 @@ DEBUG("url=%s", NetFSCFStringtoCString(CFURLGetString(url)));
 	/* optional */
 	port = CFURLGetPortNumber(url);
 	if (port != -1) {
-		str = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d"), port);
+		str = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d"), (int)port);
 		if (str == NULL)
 			goto error;
 		CFDictionarySetValue(dict, kNetFSAlternatePortKey, str);
@@ -297,12 +297,12 @@ EnumerateShares9P(void *v, CFDictionaryRef opts, CFDictionaryRef *points)
 
 #define CFENVFORMATSTRING "__CF_USER_TEXT_ENCODING=0x%X:0:0"
 static int
-DoMount9P(const char *host, const char *path, const char *mntopts, int32_t mntflags)
+DoMount9P(const char *host, int32_t port, const char *path, const char *mntopts, int32_t mntflags)
 {
 	union wait status;
 	uid_t uid, euid;
 	pid_t pid;
-	char *cmd, *env[3], enc[sizeof(CFENVFORMATSTRING)+20]; 
+	char *cmd, *env[3], enc[sizeof(CFENVFORMATSTRING)+20], portString[16];
 	int i;
 
 	TRACE();
@@ -330,6 +330,8 @@ DoMount9P(const char *host, const char *path, const char *mntopts, int32_t mntfl
 			env[0] = enc;
 			env[1] = "";
 			env[2] = NULL;
+
+			snprintf(portString, sizeof(portString), "port=%d", port);
 						
 			/* finally */
 			execle(cmd, cmd,
@@ -337,8 +339,15 @@ DoMount9P(const char *host, const char *path, const char *mntopts, int32_t mntfl
 				   "-o", (mntflags&MNT_AUTOMOUNTED)? "automounted": "noautomounted",
 				   "-o", (mntflags&MNT_DONTBROWSE)? "nobrowse": "browse",
 				   "-o", (mntflags&MNT_RDONLY)? "rdonly": "nordonly",
+				   "-o", portString,
 				   mntopts, host, path, NULL, env);
-			DEBUG("execl %s", cmd);
+			DEBUG("execl %s -t %s -o %s -o %s -o %s -o %s %s %s %s", cmd,
+				  VFS9PNAME,
+				  (mntflags&MNT_AUTOMOUNTED)? "automounted": "noautomounted",
+				  (mntflags&MNT_DONTBROWSE)? "nobrowse": "browse",
+				  (mntflags&MNT_RDONLY)? "rdonly": "nordonly",
+				  portString,
+				  mntopts, host, path);
 			_exit(ECHILD);
 	}
 	
@@ -366,6 +375,7 @@ Mount9P(void *v, CFURLRef url, CFStringRef mntpointstr, CFDictionaryRef opts, CF
 	CFNumberRef num;
 	Context9P *ctx;
 	char *host, *mntpoint, *mntopts;
+	int32_t port;
 	int32_t mntflags;
 	int e;
 
@@ -389,6 +399,10 @@ DEBUG("url=%s opts=%s", NetFSCFStringtoCString(CFURLGetString(url)), NetFSCFStri
 	CFRelease(str);
 	if (host == NULL)
 		goto error;
+
+	port = CFURLGetPortNumber(url);
+	if (!port)
+		port = 564;
 
 	mntpoint = NetFSCFStringtoCString(mntpointstr);
 	if (mntpoint == NULL)
@@ -421,8 +435,8 @@ DEBUG("url=%s opts=%s", NetFSCFStringtoCString(CFURLGetString(url)), NetFSCFStri
 	if (mntopts == NULL)
 		goto error;
 
-DEBUG("host=%s mntpoint=%s mntopts=%s", host, mntpoint, mntopts);
-	if (DoMount9P(host, mntpoint, mntopts, mntflags) < 0)
+DEBUG("host=%s port=%d mntpoint=%s mntopts=%s", host, port, mntpoint, mntopts);
+	if (DoMount9P(host, port, mntpoint, mntopts, mntflags) < 0)
 		goto error;
 
 	CFDictionarySetValue(dict, kNetFSMountPathKey, mntpointstr);
